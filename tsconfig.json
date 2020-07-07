@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "es5",
+    "module": "es6",
+    "jsx": "react",
+    "noImplicitAny": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
+    "paths": {
+      "react-icons-kit": ["node_modules/react-icons-kit/index.d.ts"]
+    }
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
