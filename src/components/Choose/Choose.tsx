@@ -1,11 +1,13 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback } from 'react';
 import { Icon } from 'react-icons-kit';
 import styled from 'styled-components';
-import { Context } from '../../index';
+import { PartnerStore } from '../../services/partherStore/PartnerStore';
+import { CurrentUserStore } from '../../services/currentUserStore/CurrentUserStore';
 
 interface IChoose {
-  icon: string;
+  icon: any;
   id: string;
+  store: PartnerStore | CurrentUserStore;
 }
 
 interface IWrapper {
@@ -29,12 +31,15 @@ const Wrapper = styled.div<IWrapper>`
   }
 `;
 
-const Choose: React.FunctionComponent<IChoose> = ({ icon, id }) => {
-  const { activeId, changeActiveId } = useContext(Context);
-  const onClickHandler = useCallback(() => changeActiveId(id), [changeActiveId, id]);
+const Choose: React.FunctionComponent<IChoose> = ({ icon, id, store }) => {
+  const onClickHandler = useCallback(() => store.changeId(id), [store, id]);
+
+  if (!icon && !id && !store.getActiveId) {
+    return null;
+  }
 
   return (
-    <Wrapper isActive={activeId === id} onClick={onClickHandler}>
+    <Wrapper isActive={store.getActiveId === id} onClick={onClickHandler}>
       <Icon icon={icon} size={62} />
     </Wrapper>
   );

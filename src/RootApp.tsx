@@ -1,17 +1,15 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import styled from 'styled-components';
 import Choose from './components/Choose/Choose';
-import { scissors } from 'react-icons-kit/feather/scissors';
-import { handPaperO } from 'react-icons-kit/fa/handPaperO';
-import { handRockO } from 'react-icons-kit/fa/handRockO';
-
-import { Context } from './index';
+import { useStores } from './hooks/hooks';
+import { useObserver } from 'mobx-react';
+import { Button } from './components/Button/Button';
+import { Simulate } from 'react-dom/test-utils';
+import input = Simulate.input;
 
 export interface IApp {
   color: string;
 }
-
-const ICONS: Record<string, any>[] = [{ handRockO }, { scissors }, { handPaperO }];
 
 const Title = styled.h1`
   font-size: 1.5em;
@@ -28,17 +26,61 @@ const RootComponent = styled.div`
 `;
 
 export const RootApp: FunctionComponent<IApp> = ({ color }) => {
-  const [activeId, changeActiveId] = useState<string>('');
+  const { currentUserStore, partnerStore, iconService } = useStores();
+  const onStart = useCallback(() => currentUserStore.sendUserName(currentUserStore.getActiveId), [
+    currentUserStore.getActiveId,
+  ]);
+  const onGet = useCallback(() => partnerStore.fetchData(currentUserStore.name), [
+    currentUserStore.name,
+  ]);
+  const onBlur = useCallback((e) => currentUserStore.setName(e.target.value), []);
 
-  return (
-    <Context.Provider value={{ activeId, changeActiveId }}>
-      <Title>Rock, Paper or Scissors - choose your destiny!</Title>
-      <RootComponent color={color}>
-        {ICONS.map((icon: Record<string, any>) => {
-          const key = Object.keys(icon)[0];
-          return <Choose key={key} id={key} icon={icon[key]} />;
-        })}
-      </RootComponent>
-    </Context.Provider>
-  );
+  return useObserver(() => {
+    if (!currentUserStore.name) {
+      return (
+        <>
+          <Title>Please enter your name</Title>
+          <input type={'text'} onBlur={onBlur} />
+        </>
+      );
+    }
+
+    return (
+      <React.Fragment>
+        <Title>Rock, Paper or Scissors</Title>
+        <Title>{`Hi, ${currentUserStore.name} - make choice and press Start button!`}</Title>
+        <RootComponent color={color}>
+          {currentUserStore.getActiveId && <h2>Your choice: </h2>}
+          {currentUserStore.getActiveId && (
+            <Choose
+              key={currentUserStore.getActiveId}
+              id={currentUserStore.getActiveId}
+              icon={iconService.getIconById(currentUserStore.getActiveId)}
+              store={currentUserStore}
+            />
+          )}
+          {!currentUserStore.getActiveId &&
+            iconService.ICONS.map((icon: Record<string, any>) => {
+              const key = Object.keys(icon)[0];
+              return <Choose key={key} id={key} icon={icon[key]} store={currentUserStore} />;
+            })}
+        </RootComponent>
+
+        <RootComponent color={'green'}>
+          {partnerStore.getActiveId && <h2>Your partner choice: </h2>}
+          {
+            <Choose
+              key={partnerStore.getActiveId}
+              id={partnerStore.getActiveId}
+              icon={iconService.getIconById(partnerStore.getActiveId)}
+              store={partnerStore}
+            />
+          }
+        </RootComponent>
+
+        <Button label={'Start'} onClick={onStart} />
+        <Button label={'Get Opponent choice'} onClick={onGet} />
+      </React.Fragment>
+    );
+  });
 };

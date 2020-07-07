@@ -6,9 +6,12 @@
     "jsx": "react",
     "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
     "baseUrl": "./",
     "paths": {
-      "react-icons-kit": ["node_modules/react-icons-kit/index.d.ts"]
+      "react-icons-kit": ["node_modules/react-icons-kit/index.d.ts"],
+      "mobx": ["node_modules/mobx/lib/mobx.d.ts"],
+      "mobx-react": ["node_modules/mobx-react/dist/index.d.ts"]
     }
   },
   "exclude": [
