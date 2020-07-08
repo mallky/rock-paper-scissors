@@ -16,6 +16,8 @@ export class CurrentUserStore {
     this.name = '';
     this.showResult = false;
     this.isYourChoiceSent = false;
+    this.opponentChoice = '';
+    this.opponentName = '';
 
     this.ws = new WebSocket(wsUrl);
 
@@ -31,7 +33,13 @@ export class CurrentUserStore {
       this.wsStatus = 'DISCONNECT';
     };
     this.ws.onmessage = (res) => {
-      const { name, choice } = JSON.parse(res.data);
+      const { name, choice, onceAgain } = JSON.parse(res.data);
+
+      if (onceAgain) {
+        this.resetData();
+        return;
+      }
+
       if (name === this.name) {
         return;
       }
@@ -94,5 +102,20 @@ export class CurrentUserStore {
   @computed
   get showOpponentAnswer() {
     return this.opponentChoice && this.userChoice && this.isYourChoiceSent;
+  }
+
+  @action
+  onceAgain() {
+    this.resetData();
+    this.ws.send(JSON.stringify({ onceAgain: true }));
+  }
+
+  @action
+  resetData() {
+    this.userChoice = '';
+    this.showResult = false;
+    this.isYourChoiceSent = false;
+    this.opponentChoice = '';
+    this.opponentName = '';
   }
 }

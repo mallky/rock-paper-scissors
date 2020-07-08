@@ -23,8 +23,9 @@ const PopupLayer = styled(FlexCenter)`
 `;
 
 const PopupContainer = styled(FlexCenter)`
-  width: 50%;
-  height: 50%;
+  width: 40%;
+  height: 20%;
+  padding: 10px;
   background: white;
   border: 1px solid black;
   font-size: 26px;
