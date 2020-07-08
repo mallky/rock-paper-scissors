@@ -35,10 +35,6 @@ export const RootApp: FunctionComponent<IApp> = ({ color }) => {
     [],
   );
   const onClosePopup = useCallback(() => onChangePopup(false), []);
-  const onSendChoice = useCallback(
-    () => currentUserStore.sendUserChoice(currentUserStore.userChoice),
-    [currentUserStore.userChoice],
-  );
   const onBlur = useCallback((e) => currentUserStore.setName(e.target.value), []);
   const onOnceAgain = useCallback(() => currentUserStore.onceAgain(), []);
 
@@ -53,10 +49,6 @@ export const RootApp: FunctionComponent<IApp> = ({ color }) => {
 
         <UserChoice currentUserStore={currentUserStore} color={color} iconService={iconService} />
         <OpponentChoice currentUserStore={currentUserStore} iconService={iconService} />
-
-        {!currentUserStore.isYourChoiceSent && (
-          <Button label={'Send your choice'} onClick={onSendChoice} />
-        )}
 
         {currentUserStore.showResult && (
           <Popup onClose={onClosePopup} winnerName={currentUserStore.winnerName} />

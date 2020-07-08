@@ -39,6 +39,7 @@ const Choose: React.FunctionComponent<IChoose> = ({ icon, id, store, disabled })
       return;
     }
     store.changeUserChoice(id);
+    store.sendUserChoice(id);
   }, [store, id, disabled]);
 
   if (!icon && !id && !store.userChoice) {
