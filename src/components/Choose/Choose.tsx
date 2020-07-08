@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { Icon } from 'react-icons-kit';
 import styled from 'styled-components';
-import { PartnerStore } from '../../services/partherStore/PartnerStore';
 import { CurrentUserStore } from '../../services/currentUserStore/CurrentUserStore';
 
 interface IChoose {
   icon: any;
   id: string;
-  store: PartnerStore | CurrentUserStore;
+  store: CurrentUserStore;
+  disabled?: boolean;
 }
 
 interface IWrapper {
@@ -31,16 +31,23 @@ const Wrapper = styled.div<IWrapper>`
   }
 `;
 
-const Choose: React.FunctionComponent<IChoose> = ({ icon, id, store }) => {
-  const onClickHandler = useCallback(() => store.changeId(id), [store, id]);
+const ICON_SIZE = 62;
 
-  if (!icon && !id && !store.getActiveId) {
+const Choose: React.FunctionComponent<IChoose> = ({ icon, id, store, disabled }) => {
+  const onClickHandler = useCallback(() => {
+    if (disabled) {
+      return;
+    }
+    store.changeUserChoice(id);
+  }, [store, id, disabled]);
+
+  if (!icon && !id && !store.userChoice) {
     return null;
   }
 
   return (
-    <Wrapper isActive={store.getActiveId === id} onClick={onClickHandler}>
-      <Icon icon={icon} size={62} />
+    <Wrapper isActive={disabled ? false : store.userChoice === id} onClick={onClickHandler}>
+      <Icon icon={icon} size={ICON_SIZE} />
     </Wrapper>
   );
 };

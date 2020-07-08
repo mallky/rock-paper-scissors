@@ -4,8 +4,7 @@ import Choose from './components/Choose/Choose';
 import { useStores } from './hooks/hooks';
 import { useObserver } from 'mobx-react';
 import { Button } from './components/Button/Button';
-import { Simulate } from 'react-dom/test-utils';
-import input = Simulate.input;
+import { Popup } from './components/Popup/Popup';
 
 export interface IApp {
   color: string;
@@ -26,40 +25,47 @@ const RootComponent = styled.div`
 `;
 
 export const RootApp: FunctionComponent<IApp> = ({ color }) => {
-  const { currentUserStore, partnerStore, iconService } = useStores();
-  const onStart = useCallback(() => currentUserStore.sendUserName(currentUserStore.getActiveId), [
-    currentUserStore.getActiveId,
-  ]);
-  const onGet = useCallback(() => partnerStore.fetchData(currentUserStore.name), [
-    currentUserStore.name,
-  ]);
+  const { currentUserStore, iconService } = useStores();
+
+  const onChangePopup = useCallback(
+    (value: boolean) => currentUserStore.changeShowResult(value),
+    [],
+  );
+  const onClosePopup = useCallback(() => onChangePopup(false), []);
+  const onSendChoice = useCallback(
+    () => currentUserStore.sendUserChoice(currentUserStore.userChoice),
+    [currentUserStore.userChoice],
+  );
   const onBlur = useCallback((e) => currentUserStore.setName(e.target.value), []);
 
   return useObserver(() => {
     if (!currentUserStore.name) {
       return (
-        <>
+        <React.Fragment>
           <Title>Please enter your name</Title>
           <input type={'text'} onBlur={onBlur} />
-        </>
+        </React.Fragment>
       );
     }
 
     return (
       <React.Fragment>
         <Title>Rock, Paper or Scissors</Title>
-        <Title>{`Hi, ${currentUserStore.name} - make choice and press Start button!`}</Title>
+        <Title>WS STATUS: {currentUserStore.wsStatus}</Title>
+        <Title>{`Hi, ${currentUserStore.name} - make choice and press Send button!`}</Title>
         <RootComponent color={color}>
-          {currentUserStore.getActiveId && <h2>Your choice: </h2>}
-          {currentUserStore.getActiveId && (
-            <Choose
-              key={currentUserStore.getActiveId}
-              id={currentUserStore.getActiveId}
-              icon={iconService.getIconById(currentUserStore.getActiveId)}
-              store={currentUserStore}
-            />
+          {currentUserStore.userChoice && (
+            <React.Fragment>
+              <h2>Your choice: </h2>
+              <Choose
+                key={currentUserStore.userChoice}
+                id={currentUserStore.userChoice}
+                icon={iconService.getIconById(currentUserStore.userChoice)}
+                store={currentUserStore}
+              />
+            </React.Fragment>
           )}
-          {!currentUserStore.getActiveId &&
+          {!currentUserStore.userChoice &&
             iconService.ICONS.map((icon: Record<string, any>) => {
               const key = Object.keys(icon)[0];
               return <Choose key={key} id={key} icon={icon[key]} store={currentUserStore} />;
@@ -67,19 +73,27 @@ export const RootApp: FunctionComponent<IApp> = ({ color }) => {
         </RootComponent>
 
         <RootComponent color={'green'}>
-          {partnerStore.getActiveId && <h2>Your partner choice: </h2>}
-          {
-            <Choose
-              key={partnerStore.getActiveId}
-              id={partnerStore.getActiveId}
-              icon={iconService.getIconById(partnerStore.getActiveId)}
-              store={partnerStore}
-            />
-          }
+          {currentUserStore.showOpponentAnswer && (
+            <React.Fragment>
+              <h2>{currentUserStore.opponentName}'s choice: </h2>
+              <Choose
+                key={currentUserStore.opponentChoice}
+                id={currentUserStore.opponentChoice}
+                icon={iconService.getIconById(currentUserStore.opponentChoice)}
+                store={currentUserStore}
+                disabled
+              />
+            </React.Fragment>
+          )}
         </RootComponent>
 
-        <Button label={'Start'} onClick={onStart} />
-        <Button label={'Get Opponent choice'} onClick={onGet} />
+        {!currentUserStore.isYourChoiceSent && (
+          <Button label={'Send your choice'} onClick={onSendChoice} />
+        )}
+
+        {currentUserStore.showResult && (
+          <Popup onClose={onClosePopup} winnerName={currentUserStore.winnerName} />
+        )}
       </React.Fragment>
     );
   });
